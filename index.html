@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Encoder/Decoder with Step-by-Step Explanation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .panel {
+            padding: 30px;
+            border-right: 2px solid #e0e0e0;
+        }
+
+        .panel:last-child {
+            border-right: none;
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.2em;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-encode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-encode:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-decode {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-decode:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #333;
+            flex: 0.5;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        .steps-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .step-content {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .binary-group {
+            color: #764ba2;
+            font-weight: 600;
+        }
+
+        .char-conversion {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .summary-value {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #667eea;
+        }
+
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+
+        .error h3 {
+            color: #f44336;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                border-right: none;
+                border-bottom: 2px solid #e0e0e0;
+            }
+
+            .panel:last-child {
+                border-bottom: none;
+            }
+        }
+
+        .highlight {
+            background: #fff59d;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Base64 Encoder/Decoder</h1>
+            <p>Educational tool with step-by-step explanations for exam preparation</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Encode Panel -->
+            <div class="panel">
+                <h2><span class="icon">📝</span> Encode</h2>
+                <textarea id="plainText" placeholder="Enter text to encode..."></textarea>
+                <div class="button-group">
+                    <button class="btn-encode" onclick="encodeText()">
+                        <span>⬆️</span> Encode to Base64
+                    </button>
+                    <button class="btn-clear" onclick="clearEncode()">Clear</button>
+                </div>
+                <div id="encodeSteps" class="steps-container" style="display: none;"></div>
+            </div>
+
+            <!-- Decode Panel -->
+            <div class="panel">
+                <h2><span class="icon">🔓</span> Decode</h2>
+                <textarea id="base64Text" placeholder="Enter Base64 to decode..."></textarea>
+                <div class="button-group">
+                    <button class="btn-decode" onclick="decodeText()">
+                        <span>⬇️</span> Decode from Base64
+                    </button>
+                    <button class="btn-clear" onclick="clearDecode()">Clear</button>
+                </div>
+                <div id="decodeSteps" class="steps-container" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+        function encodeText() {
+            const plainText = document.getElementById('plainText').value;
+            const stepsContainer = document.getElementById('encodeSteps');
+            
+            if (!plainText) {
+                stepsContainer.innerHTML = '<div class="step error"><h3>❌ Error</h3><div class="step-content">Please enter text to encode</div></div>';
+                stepsContainer.style.display = 'block';
+                return;
+            }
+
+            let steps = '';
+
+            // Step 1: Input
+            steps += `
+                <div class="step">
+                    <h3>Step 1: Input Text</h3>
+                    <div class="step-content">
+                        <div>Input: <span class="highlight">${plainText}</span></div>
+                        <div>Length: ${plainText.length} characters</div>
+                    </div>
+                </div>
+            `;
+
+            // Step 2: Convert to binary
+            let binaryStream = '';
+            let conversionDetails = '';
+            
+            for (let i = 0; i < plainText.length; i++) {
+                const char = plainText[i];
+                const ascii = char.charCodeAt(0);
+                const binary = ascii.toString(2).padStart(8, '0');
+                binaryStream += binary;
+                conversionDetails += `
+                    <div class="char-conversion">
+                        [${i + 1}] '${char}' → ASCII ${ascii.toString().padStart(3, ' ')} → ${binary}
+                    </div>
+                `;
+            }
+
+            const groupedBinary = binaryStream.match(/.{1,6}/g).join(' ');
+
+            steps += `
+                <div class="step">
+                    <h3>Step 2: Convert to Binary (8-bit)</h3>
+                    <div class="step-content">
+                        <div style="margin-bottom: 10px;">Each character → ASCII value → 8-bit binary</div>
+                        ${conversionDetails}
+                        <div style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                            <strong>Complete binary stream (${binaryStream.length} bits):</strong><br>
+                            <span class="binary-group">${groupedBinary}</span><br>
+                            <small>(Grouped by 6 bits - each group becomes one Base64 character)</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 3: Split into 6-bit chunks
+            let encoded = '';
+            let chunkDetails = '';
+            const chunks = binaryStream.match(/.{1,6}/g) || [];
+
+            for (let i = 0; i < chunks.length; i++) {
+                let chunk = chunks[i];
+                const isLastChunk = i === chunks.length - 1;
+                const isPadded = chunk.length < 6;
+                const originalChunk = chunk;
+                
+                if (isPadded) {
+                    chunk = chunk.padEnd(6, '0');
+                }
+
+                const decimal = parseInt(chunk, 2);
+                const base64Char = ALPHABET[decimal];
+                encoded += base64Char;
+
+                if (isPadded) {
+                    chunkDetails += `
+                        <div class="char-conversion">
+                            [${i + 1}] ${originalChunk} → (padded) ${chunk} → decimal ${decimal.toString().padStart(2, ' ')} → '${base64Char}' *
+                        </div>
+                    `;
+                } else {
+                    chunkDetails += `
+                        <div class="char-conversion">
+                            [${i + 1}] ${chunk} → decimal ${decimal.toString().padStart(2, ' ')} → '${base64Char}'
+                        </div>
+                    `;
+                }
+            }
+
+            steps += `
+                <div class="step">
+                    <h3>Step 3: Split into 6-bit Groups</h3>
+                    <div class="step-content">
+                        <div style="margin-bottom: 10px;">Base64 uses 6 bits per character (2^6 = 64 possible values)</div>
+                        ${chunkDetails}
+                        <div style="margin-top: 10px;"><small>* Padded with zeros to complete 6-bit group</small></div>
+                    </div>
+                </div>
+            `;
+
+            // Step 4: Add padding
+            const remainder = plainText.length % 3;
+            let padding = '';
+            let paddingExplanation = '';
+
+            if (remainder === 0) {
+                paddingExplanation = `Input length: ${plainText.length} (divisible by 3)<br>No padding needed`;
+            } else if (remainder === 1) {
+                padding = '==';
+                paddingExplanation = `Input length: ${plainText.length} (remainder 1 when divided by 3)<br>Add 2 padding characters: '=='`;
+            } else {
+                padding = '=';
+                paddingExplanation = `Input length: ${plainText.length} (remainder 2 when divided by 3)<br>Add 1 padding character: '='`;
+            }
+
+            const encodedFinal = encoded + padding;
+
+            steps += `
+                <div class="step">
+                    <h3>Step 4: Add Padding Characters</h3>
+                    <div class="step-content">
+                        <div style="margin-bottom: 10px;">Padding ensures output length is multiple of 4</div>
+                        <div style="padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                            ${paddingExplanation}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 5: Final output
+            steps += `
+                <div class="step">
+                    <h3>Step 5: Final Base64 Output</h3>
+                    <div class="step-content">
+                        <div style="padding: 15px; background: #e8f5e9; border-radius: 5px; font-size: 16px;">
+                            <strong>Encoded:</strong> <span class="highlight">${encodedFinal}</span>
+                        </div>
+                        <div class="summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Original:</span>
+                                <span class="summary-value">'${plainText}' (${plainText.length} bytes)</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Encoded:</span>
+                                <span class="summary-value">'${encodedFinal}' (${encodedFinal.length} chars)</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Expansion:</span>
+                                <span class="summary-value">${(encodedFinal.length / plainText.length).toFixed(2)}x</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            stepsContainer.innerHTML = steps;
+            stepsContainer.style.display = 'block';
+            document.getElementById('base64Text').value = encodedFinal;
+        }
+
+        function decodeText() {
+            const base64Text = document.getElementById('base64Text').value;
+            const stepsContainer = document.getElementById('decodeSteps');
+            
+            if (!base64Text) {
+                stepsContainer.innerHTML = '<div class="step error"><h3>❌ Error</h3><div class="step-content">Please enter Base64 text to decode</div></div>';
+                stepsContainer.style.display = 'block';
+                return;
+            }
+
+            let steps = '';
+
+            // Step 1: Input
+            steps += `
+                <div class="step">
+                    <h3>Step 1: Input Base64 Text</h3>
+                    <div class="step-content">
+                        <div>Input: <span class="highlight">${base64Text}</span></div>
+                        <div>Length: ${base64Text.length} characters</div>
+                    </div>
+                </div>
+            `;
+
+            // Step 2: Identify padding
+            const paddingCount = (base64Text.match(/=/g) || []).length;
+            const coreText = base64Text.replace(/=/g, '');
+
+            steps += `
+                <div class="step">
+                    <h3>Step 2: Identify Padding</h3>
+                    <div class="step-content">
+                        <div style="padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                            <div>Padding characters found: ${paddingCount}</div>
+                            <div>Core Base64 text: '${coreText}'</div>
+                            <div>Core length: ${coreText.length} characters</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 3: Convert to binary
+            let binaryStream = '';
+            let conversionDetails = '';
+            let hasError = false;
+
+            for (let i = 0; i < coreText.length; i++) {
+                const char = coreText[i];
+                const index = ALPHABET.indexOf(char);
+                
+                if (index === -1) {
+                    steps += `
+                        <div class="step error">
+                            <h3>❌ Error</h3>
+                            <div class="step-content">Invalid Base64 character '${char}' at position ${i + 1}</div>
+                        </div>
+                    `;
+                    stepsContainer.innerHTML = steps;
+                    stepsContainer.style.display = 'block';
+                    hasError = true;
+                    return;
+                }
+
+                const binary = index.toString(2).padStart(6, '0');
+                binaryStream += binary;
+                conversionDetails += `
+                    <div class="char-conversion">
+                        [${i + 1}] '${char}' → index ${index.toString().padStart(2, ' ')} → ${binary}
+                    </div>
+                `;
+            }
+
+            const groupedBinary = binaryStream.match(/.{1,6}/g).join(' ');
+
+            steps += `
+                <div class="step">
+                    <h3>Step 3: Convert to Binary (6-bit)</h3>
+                    <div class="step-content">
+                        <div style="margin-bottom: 10px;">Each Base64 character represents 6 bits</div>
+                        ${conversionDetails}
+                        <div style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                            <strong>Complete binary stream (${binaryStream.length} bits):</strong><br>
+                            <span class="binary-group">${groupedBinary}</span><br>
+                            <small>(Grouped by 6 bits for decoding)</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 4: Remove padding bits
+            let bitsToRemove = 0;
+            let paddingExplanation = '';
+
+            if (paddingCount === 0) {
+                paddingExplanation = 'No padding → no bits to remove';
+            } else if (paddingCount === 1) {
+                bitsToRemove = 2;
+                paddingExplanation = '1 padding char → remove 2 bits';
+            } else {
+                bitsToRemove = 4;
+                paddingExplanation = '2 padding chars → remove 4 bits';
+            }
+
+            const trimmedBinary = bitsToRemove > 0 ? binaryStream.slice(0, -bitsToRemove) : binaryStream;
+            const groupedTrimmed = trimmedBinary.match(/.{1,8}/g).join(' ');
+
+            steps += `
+                <div class="step">
+                    <h3>Step 4: Remove Padding Bits</h3>
+                    <div class="step-content">
+                        <div style="padding: 10px; background: #f0f0f0; border-radius: 5px; margin-bottom: 10px;">
+                            ${paddingExplanation}
+                            ${bitsToRemove > 0 ? `<br>Removed last ${bitsToRemove} bits` : ''}
+                        </div>
+                        <div style="padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                            <strong>Trimmed binary (${trimmedBinary.length} bits):</strong><br>
+                            <span class="binary-group">${groupedTrimmed}</span><br>
+                            <small>(Grouped by 8 bits - each group becomes one ASCII character)</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Step 5: Convert to ASCII
+            let decodedText = '';
+            let asciiDetails = '';
+            const octets = trimmedBinary.match(/.{8}/g) || [];
+
+            for (let i = 0; i < octets.length; i++) {
+                const octet = octets[i];
+                const ascii = parseInt(octet, 2);
+                const char = String.fromCharCode(ascii);
+                decodedText += char;
+                asciiDetails += `
+                    <div class="char-conversion">
+                        [${i + 1}] ${octet} → ASCII ${ascii.toString().padStart(3, ' ')} → '${char}'
+                    </div>
+                `;
+            }
+
+            steps += `
+                <div class="step">
+                    <h3>Step 5: Convert to ASCII (8-bit)</h3>
+                    <div class="step-content">
+                        <div style="margin-bottom: 10px;">Group bits into 8-bit chunks and convert to characters</div>
+                        ${asciiDetails}
+                    </div>
+                </div>
+            `;
+
+            // Step 6: Final output
+            steps += `
+                <div class="step">
+                    <h3>Step 6: Decoded Output</h3>
+                    <div class="step-content">
+                        <div style="padding: 15px; background: #e8f5e9; border-radius: 5px; font-size: 16px;">
+                            <strong>Decoded:</strong> <span class="highlight">${decodedText}</span>
+                        </div>
+                        <div class="summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Encoded:</span>
+                                <span class="summary-value">'${base64Text}' (${base64Text.length} chars)</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Decoded:</span>
+                                <span class="summary-value">'${decodedText}' (${decodedText.length} bytes)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            stepsContainer.innerHTML = steps;
+            stepsContainer.style.display = 'block';
+            document.getElementById('plainText').value = decodedText;
+        }
+
+        function clearEncode() {
+            document.getElementById('plainText').value = '';
+            document.getElementById('encodeSteps').style.display = 'none';
+        }
+
+        function clearDecode() {
+            document.getElementById('base64Text').value = '';
+            document.getElementById('decodeSteps').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
